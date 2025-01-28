@@ -33,17 +33,36 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			changeColor: (index, color) => {
-				const store = getStore();
+			getPrivateData: async () => {
+				const token = localStorage.getItem("token");
 
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
+				if (!token) {
+					console.error("Token no encontrado. El usuario no está autenticado.");
+					return;
+				}
 
-				setStore({ demo: demo });
+				const requestOptions = {
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`
+					}
+				};
+
+				try {
+					const response = await fetch(`${process.env.BACKEND_URL}/api/private`, requestOptions);
+					if (!response.ok) {
+						console.error("Error al obtener datos privados:", response.status);
+						return;
+					}
+
+					const data = await response.json();
+					console.log("Datos privados obtenidos:", data);
+					return data;
+				} catch (error) {
+					console.error("Error al realizar la solicitud:", error);
+				}
 			},
-
 
 			loginUser: (email, password) => {
 				const myHeaders = {
@@ -73,6 +92,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						console.log(data);
 						setStore({ auth: true });
 						localStorage.setItem("token", data.access_token);
+						return data;
 					})
 					.catch((error) => {
 						console.error("Error durante el login:", error.message);
@@ -112,8 +132,11 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				return fetch(process.env.BACKEND_URL + "/api/signup", requestOptions)
 					.then((response) => {
-						if (response.status === 201) {
-							setStore({ auth: true });
+						if (!response.ok) {
+						
+							return response.json().then((data) => {
+								throw new Error(data.msg || "Error al crear la cuenta");
+							});
 						}
 						return response.json();
 					})
@@ -121,12 +144,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 						if (data.access_token) {
 							localStorage.setItem("token", data.access_token);
 						}
+						return data;  
 					})
 					.catch((error) => {
-						console.error("Error during signup:", error);
-						throw error;
+						console.error("Error durante el signup:", error.message);
+						throw error; 
 					});
-
 			}
 
 		}

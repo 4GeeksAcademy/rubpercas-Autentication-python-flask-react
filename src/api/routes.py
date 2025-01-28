@@ -6,7 +6,6 @@ from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 
-from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
@@ -16,7 +15,6 @@ api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
 CORS(api)
-bcrypt = Bcrypt()
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
@@ -56,8 +54,7 @@ def signup():
     if user:
         return jsonify({"msg": "Email ya registrado"}), 409
 
-    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-    new_user = User(email=email, password=hashed_password, is_active=True)
+    new_user = User(email=email, password=password, is_active=True)
 
     try:
         db.session.add(new_user)

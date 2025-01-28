@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { Context } from "../store/appContext";
 import { useNavigate } from "react-router-dom";
@@ -10,14 +10,19 @@ export const Navbar = () => {
 		actions.logout()
 		Navigate('/')
 	}
+	function handlePrivate() {
+		Navigate('/private')
+	}
 	return (
 		<nav className="navbar navbar-light bg-light">
 			<div className="container">
-				<Link to="/">
-					<span className="navbar-brand mb-0 h1">React Boilerplate</span>
-				</Link>
+				<h5>AUTENTICACION</h5>
 				<div className="ml-auto">
-					{store.auth === true ? <button className="btn btn-danger" onClick={() => handleLogout()}>Logout</button> : ""}
+					{store.auth === true ?
+						<div>
+							<button className="btn btn-danger me-3" onClick={() => handleLogout()}>Logout</button>
+							<button className="btn btn-primary" onClick={() => handlePrivate()}>Private route</button>
+						</div> : ""}
 				</div>
 			</div>
 		</nav>
